@@ -7,6 +7,7 @@
 #include "temperature.h"
 #include "stepper.h"
 #include "ConfigurationStore.h"
+#include "Configuration.h"
 
 int8_t encoderDiff; /* encoderDiff is updated from interrupt context and added to encoderPosition every LCD update */
 
@@ -53,8 +54,10 @@ static void lcd_prepare_menu();
 static void lcd_move_menu();
 static void lcd_control_menu();
 static void lcd_control_temperature_menu();
+#ifndef DISABLE_PREHEAT_MENU
 static void lcd_control_temperature_preheat_pla_settings_menu();
 static void lcd_control_temperature_preheat_abs_settings_menu();
+#endif
 #ifndef DISABLE_LCD_MOTION_MENU
 static void lcd_control_motion_menu();
 #endif
@@ -399,6 +402,7 @@ static void lcd_babystep_z()
 
 static void lcd_tune_menu()
 {
+  return;
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM_EDIT(int3, MSG_SPEED, &feedmultiply, 10, 999);
@@ -671,11 +675,14 @@ static void lcd_control_temperature_menu()
     MENU_ITEM_EDIT(float3, MSG_PID_C, &Kc, 1, 9990);
 # endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
+#ifndef DISABLE_PREHEAT_MENU
     MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
     MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
+#endif
     END_MENU();
 }
 
+#ifndef DISABLE_PREHEAT_MENU
 static void lcd_control_temperature_preheat_pla_settings_menu()
 {
     START_MENU();
@@ -705,6 +712,7 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
 #endif
     END_MENU();
 }
+#endif
 
 #ifndef DISABLE_LCD_MOTION_MENU
 static void lcd_control_motion_menu()
@@ -901,41 +909,6 @@ menu_edit_type(float, float51, ftostr51, 10)
 menu_edit_type(float, float52, ftostr52, 100)
 menu_edit_type(unsigned long, long5, ftostr5, 0.01)
 
-#ifdef REPRAPWORLD_KEYPAD
-	static void reprapworld_keypad_move_z_up() {
-    encoderPosition = 1;
-    move_menu_scale = REPRAPWORLD_KEYPAD_MOVE_STEP;
-		lcd_move_z();
-  }
-	static void reprapworld_keypad_move_z_down() {
-    encoderPosition = -1;
-    move_menu_scale = REPRAPWORLD_KEYPAD_MOVE_STEP;
-		lcd_move_z();
-  }
-	static void reprapworld_keypad_move_x_left() {
-    encoderPosition = -1;
-    move_menu_scale = REPRAPWORLD_KEYPAD_MOVE_STEP;
-		lcd_move_x();
-  }
-	static void reprapworld_keypad_move_x_right() {
-    encoderPosition = 1;
-    move_menu_scale = REPRAPWORLD_KEYPAD_MOVE_STEP;
-		lcd_move_x();
-	}
-	static void reprapworld_keypad_move_y_down() {
-    encoderPosition = 1;
-    move_menu_scale = REPRAPWORLD_KEYPAD_MOVE_STEP;
-		lcd_move_y();
-	}
-	static void reprapworld_keypad_move_y_up() {
-		encoderPosition = -1;
-		move_menu_scale = REPRAPWORLD_KEYPAD_MOVE_STEP;
-    lcd_move_y();
-	}
-	static void reprapworld_keypad_move_home() {
-		enquecommand_P((PSTR("G28"))); // move all axis home
-	}
-#endif
 
 /** End of menus **/
 
@@ -1004,13 +977,7 @@ void lcd_init()
     SET_INPUT(BTN_ENC);
     WRITE(BTN_ENC,HIGH);
   #endif
-  #ifdef REPRAPWORLD_KEYPAD
-    SET_OUTPUT(SHIFT_CLK);
-    SET_OUTPUT(SHIFT_LD);
-    SET_INPUT(SHIFT_OUT);
-    WRITE(SHIFT_OUT,HIGH);
-    WRITE(SHIFT_LD,HIGH);
-  #endif
+
 #else
   #ifdef SR_LCD_2W_NL
      SET_OUTPUT(SR_DATA_PIN);
@@ -1021,7 +988,7 @@ void lcd_init()
     SET_OUTPUT(SHIFT_EN);
     SET_INPUT(SHIFT_OUT);
     WRITE(SHIFT_OUT,HIGH);
-    WRITE(SHIFT_LD,HIGH); 
+    WRITE(SHIFT_LD,HIGH);
     WRITE(SHIFT_EN,LOW);
    #endif // SR_LCD_2W_NL
 #endif//!NEWPANEL

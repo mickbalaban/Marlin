@@ -253,7 +253,7 @@ ifeq ($(shell [ $(ARDUINO_VERSION) -ge 100 ] && echo true), true)
 CXXSRC += main.cpp
 else
 ifeq ($(HARDWARE_VARIANT), Teensy)
-SRC += pins_teensy.c 
+SRC += pins_teensy.c
 else
 SRC += pins_arduino.c main.c
 endif

@@ -487,6 +487,7 @@ void manage_heater()
             LCD_MESSAGEPGM("Heating failed");
             SERIAL_ECHO_START;
             SERIAL_ECHOLN("Heating failed");
+            pbneo_set_animation(DANGER_ANIMATION);
         }else{
             watchmillis[e] = 0;
         }
@@ -499,6 +500,7 @@ void manage_heater()
           SERIAL_ERROR_START;
           SERIAL_ERRORLNPGM("Extruder switched off. Temperature difference between temp sensors is too high !");
           LCD_ALERTMESSAGEPGM("Err: REDUNDANT TEMP ERROR");
+            pbneo_set_animation(DANGER_ANIMATION);
         }
         #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
           Stop();
